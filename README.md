@@ -1,32 +1,85 @@
-# MediFlow (MedPrecision) — Healthcare Appointment & Follow-up Manager
+# 🩺 MedPrecision (MediFlow) — Healthcare Appointment & Follow-up Manager
 
-> Production-ready Healthcare Appointment & Follow-up Management Platform with Role-Based Portals (Patient, Doctor, Admin), AI Clinical Summarization, Double-Booking Prevention, Doctor Leave Conflict Management, Medication Reminders, and Multi-Channel Notification Sync (Resend Email & Google Calendar).
+[![Next.js 14](https://img.shields.io/badge/Next.js-14-black?style=flat&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
+[![Express.js](https://img.shields.io/badge/Express.js-4.21-lightgrey?style=flat&logo=express)](https://expressjs.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-336791?style=flat&logo=postgresql)](https://supabase.com/)
+[![Prisma ORM](https://img.shields.io/badge/Prisma-5.22-2D3748?style=flat&logo=prisma)](https://prisma.io/)
+[![Google Calendar](https://img.shields.io/badge/Google_Calendar-OAuth_2.0-4285F4?style=flat&logo=google-calendar)](https://developers.google.com/calendar)
+[![Resend Email](https://img.shields.io/badge/Resend-Email_API-000000?style=flat&logo=resend)](https://resend.com/)
+[![Google Gemini](https://img.shields.io/badge/Gemini_1.5_Flash-AI_Summaries-8E75B2?style=flat&logo=google)](https://aistudio.google.com/)
+
+> **MedPrecision** is a production-ready Healthcare Appointment & Follow-up Management Platform with Role-Based Portals (Patient, Doctor, Admin), AI Clinical Summarization, Hard Database-Level Double-Booking Prevention, Doctor Leave Conflict Management, Medication Reminders, and Multi-Channel Notification Sync (Resend Email & Google Calendar).
+
+---
+
+## 📸 Application Preview & UI Showcase
+
+### 1. Multi-Role Secure Authentication Portal
+*Unified, secure access portal for Patients, Doctors, and System Administrators with Supabase Auth and HIPAA-compliant session encryption.*
+
+<p align="center">
+  <img src="docs/screenshots/01_login_portal.png" alt="MedPrecision Secure Access Portal" width="850" style="border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);" />
+</p>
+
+---
+
+### 2. Patient Dashboard & Care Plan Overview
+*Live overview of upcoming appointments, medication dosage reminders, emergency care guidelines, and historical AI-generated visit summaries.*
+
+<p align="center">
+  <img src="docs/screenshots/02_patient_dashboard.png" alt="Patient Dashboard & Care Plan Overview" width="850" style="border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);" />
+</p>
+
+---
+
+### 3. Dynamic Doctor Slot Picker
+*Real-time calculation of available 30/45-minute consultation slots based on physician working hours, existing bookings, and recorded leaves.*
+
+<p align="center">
+  <img src="docs/screenshots/03_slot_selection.png" alt="Doctor Slot Selection" width="850" style="border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);" />
+</p>
+
+---
+
+### 4. 5-Minute Atomic Slot Hold & Symptom Intake Form
+*Atomic 5-minute exclusive slot reservation with real-time countdown timer, preventing concurrent booking collisions while the patient inputs symptoms.*
+
+<p align="center">
+  <img src="docs/screenshots/04_symptom_intake_hold.png" alt="Symptom Intake & Slot Reservation Hold" width="850" style="border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);" />
+</p>
+
+---
+
+### 5. Multi-Channel Booking Confirmation
+*Automated dispatch of transactional email confirmations, Google Calendar event creation, and AI pre-visit urgency analysis for the doctor.*
+
+<p align="center">
+  <img src="docs/screenshots/05_booking_confirmed.png" alt="Appointment Booking Confirmed" width="850" style="border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);" />
+</p>
 
 ---
 
 ## 📑 Table of Contents
-1. [System Overview & Architecture](#-system-overview--architecture)
-2. [Role-Based Portals & Key Features](#-role-based-portals--key-features)
-3. [Tech Stack](#-tech-stack)
-4. [Quick Start & Local Setup](#-quick-start--local-setup)
-5. [Environment Variables (`.env.example`)](#-environment-variables)
-6. [Database Schema & Double-Booking Guards](#-database-schema--double-booking-guards)
-7. [REST API Documentation](#-rest-api-documentation)
-8. [AI / LLM Integration & Prompts](#-ai--llm-integration--prompts)
-9. [Google Calendar OAuth 2.0 Setup](#-google-calendar-oauth-20-setup)
-10. [Email Notifications Setup (Resend)](#-email-notifications-setup-resend)
-11. [Background Jobs & Medication Reminders](#-background-jobs--medication-reminders)
-12. [System Design & Concurrency Highlights](#-system-design--concurrency-highlights)
-13. [Verification & Testing Guide](#-verification--testing-guide)
+1. [Application Preview & UI Showcase](#-application-preview--ui-showcase)
+2. [System Architecture](#-system-architecture)
+3. [Role-Based Portals & Key Features](#-role-based-portals--key-features)
+4. [Tech Stack](#-tech-stack)
+5. [Quick Start & Local Setup](#-quick-start--local-setup)
+6. [Environment Variables Guide](#-environment-variables-guide)
+7. [Database Schema & Hard Double-Booking Guards](#-database-schema--hard-double-booking-guards)
+8. [REST API Documentation](#-rest-api-documentation)
+9. [AI / LLM Integration & Prompts](#-ai--llm-integration--prompts)
+10. [Google Calendar OAuth 2.0 Setup](#-google-calendar-oauth-20-setup)
+11. [Email Notifications Setup (Resend)](#-email-notifications-setup-resend)
+12. [Background Jobs & Medication Reminders](#-background-jobs--medication-reminders)
+13. [System Design & Concurrency Highlights](#-system-design--concurrency-highlights)
+14. [Automated Verification & Test Suite](#-automated-verification--test-suite)
 
 ---
 
-## 🏥 System Overview & Architecture
-
-MedPrecision / MediFlow solves the core operational challenges of modern healthcare clinics:
-- **Patients**: Search specialists by specialization, reserve slots with live 5-minute holds, fill pre-visit symptom forms, receive tailored email confirmations, connect Google Calendar for auto-sync, reschedule visits, and view post-visit care plans with daily medication schedules.
-- **Doctors**: Access incoming patient queues prioritized by **AI Symptom Urgency (Low/Medium/High)**, review chief complaints and 3 AI-suggested clinical diagnostic questions, record SOAP notes, build structured e-prescriptions, and generate patient-friendly summaries.
-- **Admins**: Manage doctor profiles (working hours, slot durations, specialization), track clinic-wide analytics, and record doctor leaves with **atomic conflict auto-rescheduling** and notification dispatch.
+## 🏥 System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -57,11 +110,11 @@ MedPrecision / MediFlow solves the core operational challenges of modern healthc
 ## ✨ Role-Based Portals & Key Features
 
 ### 1. Patient Portal (`/patient`)
-- **Doctor Discovery (`/patient/find-doctor`)**: Search specialists by clinical domain or name.
+- **Doctor Discovery (`/patient/find-doctor`)**: Search specialists by clinical domain, ratings, and hospital affiliation.
 - **Interactive Booking (`/patient/book/[doctorId]`)**:
-  - Live doctor schedule calculation.
+  - Dynamic slot generator based on working hours.
   - 5-minute atomic slot reservation hold with live countdown timer.
-  - Pre-visit symptom form with chip tags and detailed condition description.
+  - Pre-visit symptom form with chip tags and detailed description.
 - **Appointment Management (`/patient/appointments`)**:
   - Review confirmed, completed, and rescheduled appointments.
   - **Interactive Rescheduling**: Pick new dates and available slots to reschedule appointments.
@@ -105,6 +158,9 @@ MedPrecision / MediFlow solves the core operational challenges of modern healthc
 
 ### 1. Clone & Install Dependencies
 ```bash
+git clone https://github.com/PiyushAI/Unthinkalble_HealthCare_Management_System.git
+cd Unthinkalble_HealthCare_Management_System
+
 # Backend dependencies
 cd backend
 npm install
@@ -140,7 +196,7 @@ npm run dev
 
 ---
 
-## 🔑 Environment Variables
+## 🔑 Environment Variables Guide
 
 ### Backend (`backend/.env`)
 ```env
@@ -180,7 +236,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
 
 ---
 
-## 🛡️ Database Schema & Double-Booking Guards
+## 🛡️ Database Schema & Hard Double-Booking Guards
 
 ### Hard Concurrency Guarantee
 MedPrecision enforces double-booking prevention at the PostgreSQL storage engine layer using a partial unique index:
@@ -296,8 +352,61 @@ If external LLM APIs (Gemini / Anthropic) are unreachable, timed out, or unconfi
 
 ## 📖 System Design & Concurrency Highlights
 
-See [`SYSTEM_DESIGN.md`](file:///c:/Users/HP/Downloads/healthcare-appointment-manager-full/SYSTEM_DESIGN.md) for the detailed 800-word design write-up covering:
+See [`SYSTEM_DESIGN.md`](SYSTEM_DESIGN.md) for the detailed 800-word design write-up covering:
 1. Double-Booking Prevention with PostgreSQL Partial Unique Indexes.
 2. 5-Minute Slot Hold Mechanism with TTL.
 3. Doctor Leave Conflict Handling with Atomic Multi-Table Transactions.
 4. Asynchronous Notification Retries, Fallbacks, and Dead-Letter Logging.
+
+---
+
+## 🧪 Automated Verification & Test Suite
+
+Run the end-to-end integration and concurrency audit test suite:
+```bash
+cd backend
+npx tsx scripts/audit-e2e-verification.ts
+```
+
+```
+=======================================================
+🧪 STARTING PRODUCTION AUDIT & VERIFICATION TEST SUITE
+=======================================================
+
+--- 1. Testing Database & Doctor Discovery ---
+✅ [PASS] Doctor record retrieved from database
+✅ [PASS] Patient record retrieved from database
+
+--- 2. Testing Working Hours & Slot Generation ---
+✅ [PASS] Available slots dynamically computed from working hours
+
+--- 3. Testing 5-Min Slot Hold & Double-Booking Protection ---
+✅ [PASS] Patient successfully placed 5-minute hold on slot
+✅ [PASS] Simultaneous hold collision rejected via unique constraint
+✅ [PASS] Booking confirmed from hold atomically
+
+--- 4. Testing AI Pre-Visit Summary & Urgency Scoring ---
+✅ [PASS] AI Symptom Urgency correctly classified (HIGH)
+✅ [PASS] AI generated exactly 3 clinical questions for the doctor
+
+--- 5. Testing Doctor Consultation, Prescriptions & Post-Visit Summary ---
+✅ [PASS] AI Patient-Friendly Care Summary generated successfully
+✅ [PASS] Structured Medication Reminders generated in DB from prescription
+
+--- 6. Testing Google Calendar OAuth & Event Sync ---
+✅ [PASS] Google OAuth 2.0 URL generated with minimum required calendar.events scope
+✅ [PASS] Google Calendar event ID mapped and recorded
+✅ [PASS] Google Calendar event update on reschedule executed idempotently
+
+--- 7. Testing Doctor Leave & Conflict Auto-Rescheduling ---
+✅ [PASS] Atomic leave handler detected conflicting appointment and rescheduled it
+✅ [PASS] Conflicting appointment status transitioned to RESCHEDULED in DB
+✅ [PASS] Doctor slots on leave date are completely blocked and unavailable
+
+--- 8. Testing Multi-Channel Email Notifications ---
+✅ [PASS] Email templates for Booking, Reschedule, Cancellation, Post-Visit Summary, and Dosage Reminders executed without errors
+
+=======================================================
+🎉 ALL AUDIT VERIFICATIONS PASSED: 17 / 17 TESTS
+=======================================================
+```
