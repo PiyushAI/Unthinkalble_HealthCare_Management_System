@@ -1,0 +1,225 @@
+// Healthcare Appointment & Follow-up Manager — Prisma schema
+// Matches the architecture doc: DB-level uniqueness guards double-booking,
+// structured prescription data drives reminders (not LLM text).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+enum AppointmentStatus {
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  RESCHEDULED
+}
+
+enum LlmStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum UrgencyLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ReminderStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum NotificationType {
+  BOOKING_CONFIRM
+  REMINDER
+  CANCELLATION
+  LEAVE_CONFLICT
+  CONSULTATION_SUMMARY
+}
+
+enum NotificationChannel {
+  EMAIL
+  CALENDAR
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENT
+  FAILED
+  DEAD_LETTER
+}
+
+model User {
+  id        String   @id @default(uuid())
+  role      Role
+  name      String
+  email     String   @unique
+  phone     String?
+  createdAt DateTime @default(now())
+
+  doctor  Doctor?
+  patient Patient?
+
+  @@map("users")
+}
+
+model Doctor {
+  id                   String   @id
+  user                 User     @relation(fields: [id], references: [id])
+  specialization       String
+  workingHours         Json // { mon: [{start:"09:00", end:"13:00"}], tue: [...] }
+  slotDurationMinutes  Int      @default(30)
+  googleRefreshToken   String? // encrypted at rest
+  createdAt            DateTime @default(now())
+
+  leaves       DoctorLeave[]
+  appointments Appointment[]
+  slotHolds    SlotHold[]
+
+  @@map("doctors")
+}
+
+model Patient {
+  id                 String   @id
+  user               User     @relation(fields: [id], references: [id])
+  dob                DateTime?
+  gender             String?
+  googleRefreshToken String?
+  createdAt          DateTime @default(now())
+
+  appointments Appointment[]
+  slotHolds    SlotHold[]
+  reminders    MedicationReminder[]
+
+  @@map("patients")
+}
+
+model DoctorLeave {
+  id        String   @id @default(uuid())
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  leaveDate DateTime @db.Date
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@unique([doctorId, leaveDate])
+  @@map("doctor_leaves")
+}
+
+// Temporary soft-lock while a patient fills the symptom form.
+model SlotHold {
+  id        String   @id @default(uuid())
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  slotStart DateTime
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([doctorId, slotStart])
+  @@map("slot_holds")
+}
+
+model Appointment {
+  id                     String            @id @default(uuid())
+  patientId              String
+  patient                Patient           @relation(fields: [patientId], references: [id])
+  doctorId               String
+  doctor                 Doctor            @relation(fields: [doctorId], references: [id])
+  slotStart              DateTime
+  slotEnd                DateTime
+  status                 AppointmentStatus @default(CONFIRMED)
+  googleEventIdPatient   String?
+  googleEventIdDoctor    String?
+  version                Int               @default(0) // optimistic-lock fallback
+  createdAt              DateTime          @default(now())
+
+  symptomForm SymptomForm?
+  visitNote   VisitNote?
+
+  @@index([doctorId, slotStart])
+  @@map("appointments")
+}
+
+model SymptomForm {
+  id                String       @id @default(uuid())
+  appointmentId     String       @unique
+  appointment       Appointment  @relation(fields: [appointmentId], references: [id])
+  rawSymptoms       String
+  llmUrgency        UrgencyLevel?
+  llmChiefComplaint String?
+  llmQuestions      Json? // string[3]
+  llmStatus         LlmStatus    @default(PENDING)
+  createdAt         DateTime     @default(now())
+
+  @@map("symptom_forms")
+}
+
+model VisitNote {
+  id                    String      @id @default(uuid())
+  appointmentId         String      @unique
+  appointment           Appointment @relation(fields: [appointmentId], references: [id])
+  clinicalNotes         String
+  diagnosis             String?
+  symptoms              String?
+  treatment             String?
+  recommendations       String?
+  followUpInstructions String?
+  prescription          Json // [{ drug, dosage, timesPerDay, durationDays }]
+  llmPatientSummary     String?
+  llmStatus             LlmStatus   @default(PENDING)
+  emailSent             Boolean     @default(false)
+  emailSentAt           DateTime?
+  emailError            String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @default(now()) @updatedAt
+
+  reminders MedicationReminder[]
+
+  @@map("visit_notes")
+}
+
+model MedicationReminder {
+  id          String         @id @default(uuid())
+  visitNoteId String
+  visitNote   VisitNote      @relation(fields: [visitNoteId], references: [id])
+  patientId   String
+  patient     Patient        @relation(fields: [patientId], references: [id])
+  drugName    String
+  dosage      String
+  scheduledAt DateTime
+  status      ReminderStatus @default(PENDING)
+  retryCount  Int            @default(0)
+
+  @@index([status, scheduledAt])
+  @@map("medication_reminders")
+}
+
+model NotificationLog {
+  id            String              @id @default(uuid())
+  type          NotificationType
+  channel       NotificationChannel
+  recipientId   String
+  appointmentId String?
+  status        NotificationStatus  @default(QUEUED)
+  retryCount    Int                 @default(0)
+  lastError     String?
+  createdAt     DateTime            @default(now())
+
+  @@map("notification_log")
+}
