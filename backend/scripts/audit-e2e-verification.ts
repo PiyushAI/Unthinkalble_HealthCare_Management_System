@@ -55,9 +55,9 @@ async function runAuditTests() {
             },
           },
         },
-        include: { doctor: true },
+        include: { doctor: { include: { user: true } } },
       });
-      doctor = testUser.doctor!;
+      doctor = testUser.doctor;
     }
     assert(Boolean(doctor), "Doctor record retrieved from database", `Doctor ID: ${doctor?.id}`);
 
@@ -72,11 +72,15 @@ async function runAuditTests() {
           role: "PATIENT",
           patient: { create: {} },
         },
-        include: { patient: true },
+        include: { patient: { include: { user: true } } },
       });
-      patient = patUser.patient!;
+      patient = patUser.patient;
     }
     assert(Boolean(patient), "Patient record retrieved from database", `Patient ID: ${patient?.id}`);
+
+    if (!doctor || !patient) {
+      throw new Error("Missing required doctor or patient record to continue tests");
+    }
 
     // ------------------------------------------------------------------
     // TEST 2: Dynamic Slot Generation
