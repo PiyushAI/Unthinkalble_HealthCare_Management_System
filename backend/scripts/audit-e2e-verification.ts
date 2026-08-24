@@ -222,6 +222,11 @@ async function runAuditTests() {
     const futureDate = new Date(Date.now() + 5 * 86400000);
     futureDate.setHours(11, 0, 0, 0);
 
+    // Clean up any stale appointment on futureDate from previous runs
+    await prisma.appointment.deleteMany({
+      where: { doctorId: doctor.id, slotStart: futureDate },
+    }).catch(() => null);
+
     const testAppt2 = await prisma.appointment.create({
       data: {
         doctorId: doctor.id,
@@ -263,9 +268,14 @@ async function runAuditTests() {
     await sendReminderEmail(patient.id, appt.id, activeReminders[0]?.id);
     assert(true, "Email templates for Booking, Reschedule, Cancellation, Post-Visit Summary, and Dosage Reminders executed without errors");
 
-    // Clean up test appointment
+    // Clean up test appointment and leave
     await deleteCalendarEvent(testAppt2.id);
     await prisma.appointment.delete({ where: { id: testAppt2.id } }).catch(() => null);
+    const dayStart = new Date(futureDate);
+    dayStart.setHours(0, 0, 0, 0);
+    await prisma.doctorLeave.deleteMany({
+      where: { doctorId: doctor.id, leaveDate: dayStart },
+    }).catch(() => null);
 
     console.log("\n=======================================================");
     console.log(`🎉 ALL AUDIT VERIFICATIONS PASSED: ${passedTests} / ${totalTests} TESTS`);

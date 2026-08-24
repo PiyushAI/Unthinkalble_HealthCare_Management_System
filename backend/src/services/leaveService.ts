@@ -17,8 +17,15 @@ export async function markDoctorLeave(
   dayEnd.setHours(23, 59, 59, 999);
 
   const affectedAppointments = await prisma.$transaction(async (tx) => {
-    await tx.doctorLeave.create({
-      data: { doctorId, leaveDate: dayStart, reason },
+    await tx.doctorLeave.upsert({
+      where: {
+        doctorId_leaveDate: {
+          doctorId,
+          leaveDate: dayStart,
+        },
+      },
+      create: { doctorId, leaveDate: dayStart, reason },
+      update: { reason },
     });
 
     const affected = await tx.appointment.findMany({
